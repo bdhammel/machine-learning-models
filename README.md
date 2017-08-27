@@ -10,13 +10,13 @@ Notes:
 
 Simple fully-connected network
 
-MNIST accuracy: 96%
+MNIST accuracy: **96%**
 
 ## Convolutional Neural Network (CNN)
 
-Simple fully-connected network
+Simple convolutional neural network
 
-MNIST accuracy: 98%
+MNIST accuracy: **98%**
 
 Notes: Slow, only ran for 2 epoch. 
 
@@ -24,11 +24,14 @@ Notes: Slow, only ran for 2 epoch.
 
 Implementation of the VGG16 architecture with pretrained MNIST data
 
+![VGG16](./media/vgg16.png)
+<small> cite: https://www.cs.toronto.edu/~frossard/post/vgg16/ </small>
+
+*Note:* Because MNIST is 28x28, first 10 layers omitted and layer depth made a factor of 3 smaller (as MNIST has only 1 color layer)
+
 MNIST accuracy: 
 
-Notes: 
-
-## Stacked Autoencoder (Xwing AE)
+## Stacked Autoencoder (X-wing AE)
 
 A symmetric autoencoder for unsupervised learning 
 
@@ -36,4 +39,6 @@ Notes: Success is largely dependent on layer sizes, seems to have a small window
 
 ## Convolutional Autoencoder (CAE)
 
-A symmetric convolutional autoencoder 
+A symmetric convolutional autoencoder
+
+## Variational Autoencoder (VAE)
