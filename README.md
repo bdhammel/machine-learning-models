@@ -4,7 +4,9 @@ Algorithms benchmarked to the MNIST dataset
 
 ## Principle Component Analysis (PCA)
 
-Notes: 
+![VGG16](./media/pca.png)
+
+Naive Bayes accuracy: **56%**
 
 ## Artificial Neural Network (ANN)
 
@@ -36,6 +38,8 @@ MNIST accuracy:
 A symmetric autoencoder for unsupervised learning 
 
 Notes: Success is largely dependent on layer sizes, seems to have a small window of convergence
+
+![VGG16](./media/xwing.png)
 
 ## Convolutional Autoencoder (CAE)
 
