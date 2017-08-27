@@ -2,37 +2,9 @@ import tensorflow as tf
 import numpy as np
 
 
-class FullyConnectedLayer:
-    def __init__(self, shape, namescope, activation_fn=tf.nn.sigmoid):
-        """
-        Args
-        ----
-        shape (list, ints) : [input_size, output_size]
-        namescope (str) : name scope of the variables
-        activation_fn : the activation function to use 
-        """
-        self.fn = activation_fn
-        self.namescope = namescope
-
-        with tf.name_scope(self.namescope):
-            self.W = weight_variable(shape)
-            self.b = bias_variable([shape[-1]])
-
-    def forward(self, X):
-        """Propagate data through layer
-        """
-        with tf.name_scope(self.namescope):
-            return self.fn(tf.matmul(X, self.W) + self.b)
-
-    def forward_without_activation(self, X):
-        with tf.name_scope(self.namescope):
-            return tf.matmul(X, self.W) + self.b
-
-
 class ConvolutionalLayer:
     def __init__(self, shape, namescope):
         self.namescope = namescope
-
         with tf.name_scope(self.namescope):
             self.W = weight_variable(shape)
             self.b = bias_variable([shape[-1]])
@@ -71,20 +43,13 @@ class ConPoolLayer:
         return h_pool
 
 
-
-def init_weights(shape, stddev=.1):
-    return tf.truncated_normal(shape=shape, stddev=stddev)
-
-
-def init_biases(shape, val=.1):
-    return tf.constant(val, shape=shape)
+def weight_variable(shape, stddev=.1):
+    init = tf.truncated_normal(shape=shape, stddev=stddev)
+    return tf.Variable(init, name="W")
 
 
-def weight_variable(shape):
-    return tf.Variable(init_weights(shape), name="W")
-
-
-def bias_variable(shape):
+def bias_variable(shape, val=.1):
+    init = tf.constant(val, shape=shape)
     return tf.Variable(init_biases(shape), name="b")
 
 
