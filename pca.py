@@ -47,7 +47,7 @@ if __name__ == "__main__":
         plt.subplot(n_row, n_col, i+1)
         plt.imshow(evecs[i].reshape(28,28), cmap='jet')
 
-        title_text = 'Eigenvalue ' + str(i + 1)
+        title_text = 'Eigenvector ' + str(i + 1)
         plt.title(title_text, size=6.5)
         plt.xticks(())
         plt.yticks(())
