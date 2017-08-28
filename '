@@ -37,7 +37,7 @@ class VariationalAutoencoder:
 
         # network output
         self.logits = self.decoder.forward(self.Z)
-        self.pX = Bernoulli(logits=self.logits)
+        self.X_hat = Bernoulli(logits=self.logits)
 
         # Prior predictive sample 
         standard_normal = Normal(
@@ -51,16 +51,16 @@ class VariationalAutoencoder:
             ), 1)
 
         expected_log_likelihood = tf.reduce_sum(
-            self.pX.log_prob(self.X), 1)
+            self.X_hat.log_prob(self.X), 1)
 
         self.elbo = tf.reduce_sum(expected_log_likelihood - kl)
         self.train_op = tf.train.RMSPropOptimizer(
                 learning_rate=0.001).minimize(-self.elbo)
 
-        self.X_hat = self.pX.sample()
 
     def set_session(self, session):
-        """Set the session variable for the fully connected encoder decoder networks
+        """Set the session variable for the 
+        fully connected encoder decoder networks
         """
         self.session = session
         self.encoder.set_session(session)
@@ -83,29 +83,12 @@ class VariationalAutoencoder:
 
     def encode(self, X):
         """Return the calculated means of and input X
-        Args
-        ----
-        X (numpy array) : flattened MNIST image
-
-        Returns
-        -------
-        means (numpy array) : mean values of the Gaussian fitted models 
         """
         return self.session.run(
             self.means,
             feed_dict={self.X: X})
 
     def transform(self, X):
-        """Transform input image 
-        Args
-        ----
-        X (numpy array) : flattened MNIST image
-
-        Returns
-        -------
-        Xhat (numpy array) : predicted MNIST image
-
-        """
         return self.session.run(
             self.X_hat,
             feed_dict={self.X: X})
@@ -120,27 +103,12 @@ if __name__ == "__main__":
     N, D = Xtrain.shape
     
     with tf.Session() as session:
-        vae = VariationalAutoencoder(D, [200], 200)
+        vae = VariationalAutoencoder(D, [200, 100], 200)
         session.run(tf.global_variables_initializer())
         vae.set_session(session)
         vae.fit(Xtrain)
+        ones = Xtrain[Ytrain==1]
+        #means = vae.transform(ones[:50])
+        x = vae.transform(ones[0])
 
-        done = False
-        while not done:
-            i = np.random.choice(len(Xtest))
-            x = Xtest[i]
-            y = vae.transform([x])
-            plt.subplot(1,2,1)
-            plt.imshow(x.reshape(28,28), cmap='gray')
-            plt.title('Original')
-
-            plt.subplot(1,2,2)
-            plt.imshow(y.reshape(28,28), cmap='gray')
-            plt.title('Reconstructed')
-
-            plt.show()
-
-            ans = input("Generate another?" )
-            if ans and ans[0] in ('n' or 'N'):
-                done = True
 

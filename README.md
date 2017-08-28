@@ -46,3 +46,5 @@ Notes: Success is largely dependent on layer sizes, seems to have a small window
 A symmetric convolutional autoencoder
 
 ## Variational Autoencoder (VAE)
+
+![VGG16](./media/vae.png)
