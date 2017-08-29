@@ -48,3 +48,11 @@ A symmetric convolutional autoencoder
 ## Variational Autoencoder (VAE)
 
 ![VGG16](./media/vae.png)
+
+## Generative Adversarial Network (DCGAN)
+
+A Deep Convolutional GAN
+
+ - https://arxiv.org/pdf/1511.06434v2.pdf
+
+## Recurrent Neural Network (RNN)
