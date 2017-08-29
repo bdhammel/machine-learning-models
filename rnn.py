@@ -1,33 +1,45 @@
 import tensorflow as tf
 import numpy as np
 
-from util import y2indicator, accuracy, get_pickled_data
+from util import y2indicator, accuracy, get_pickled_image_data
 from ann import ANN 
 
 from tensorflow.contrib.rnn import static_rnn as get_rnn_output
-from tensorflow.contrib.rnn import BasicRNNCell
+from tensorflow.contrib.rnn import BasicRNNCell, BasicLSTMCell
 
 class FullyConnectedLayerWithMemory:
-    def __init(self, shape, activation_fn):
-        self.f = activation_fn
-        self.timestep = timestep
 
-        self.W = self.weight_variable(shape)
-        self.b = self.bias_variable([shape[-1]])
-        self.rnn_unit = BasicRNNCell(num_units=self.M, activation=self.f)
+    def __init__(self, hidden_layer_size, output_size, activation_fn=tf.nn.sigmoid):
+        self.fn = activation_fn
+        self.hidden_layer_size = hidden_layer_size
+        self.output_size = output_size
+
+        self.Wo = self.weight_variable(shape=(hidden_layer_size, output_size))
+        self.bo = self.bias_variable(shape=[output_size])
+
+        # Input weights, hidden weights, and hidden biases are created by the
+        # rnn unit
+        #self.rnn_unit = BasicRNNCell(
+        #        num_units=hidden_layer_size, activation=self.fn, reuse=None)
+
+        self.rnn_unit = BasicLSTMCell(
+                num_units=hidden_layer_size, activation=self.fn, reuse=None)
 
     def forward(self, X):
-        x = tf.unstack(x, timesteps, 1)
 
         outputs, states = get_rnn_output(
-                self.rnn_unit, x, dtype=tf.float32)
+                self.rnn_unit, X, dtype=tf.float32)
 
         # outputs are now of size (T, batch_sz, M)
         # so make it (batch_sz, T, M)
+        """
         outputs = tf.transpose(outputs, (1, 0, 2))
-        outputs = tf.reshape(outputs, (T*batch_sz, M))
+        outputs = tf.reshape(
+            outputs, 
+            (-1, self.hidden_layer_size))
+        """
 
-        return tf.matmul(outputs, self.W) + self.b
+        return tf.matmul(outputs[-1], self.Wo) + self.bo
 
     @staticmethod
     def weight_variable(shape, stddev=.1):
@@ -40,72 +52,109 @@ class FullyConnectedLayerWithMemory:
         return tf.Variable(init, name="b")
 
 class RNN:
-    def __init__(self, input_size, timesteps, hidden_layer_sizes, output_size):
+    def __init__(self, input_size, chunk_size, hidden_layer_sizes, output_size, batch_size=100):
+
+        self.input_size = input_size
+        self.chunk_size = chunk_size
+        self.batch_size = batch_size
+
         self.Xin = tf.placeholder(
                 tf.float32, 
-                shape=(None, timesteps, input_size), 
+                shape=(batch_size, chunk_size, input_size), 
                 name='X')
         self.labels = tf.placeholder(
                 tf.int64, 
-                shape=(None, output_size), 
+                shape=(batch_size, output_size), 
                 name='labels')
 
         self.layers = []
 
-        logits = self.forward(self.Xin)
-        self.predict_op = tf.argmax(logits, 1)
+        self.layers.append(
+                FullyConnectedLayerWithMemory(
+                    hidden_layer_sizes, output_size)
+                )
 
-        labels = tf.reshape(self.labels, (T*batch_sz,))
+        self.logits = self.forward(self.Xin)
+        self.predict_op = tf.argmax(self.logits, 1)
 
         self.cost_op = tf.reduce_mean(
-            tf.nn.sparse_softmax_cross_entropy_with_logits(
+            tf.nn.softmax_cross_entropy_with_logits(
                 logits=self.logits, labels=self.labels)
             )
 
-        self.train_op = tf.train.MomentumOptimizer(learning_rate, momentum=mu).minimize(cost_op)
+        self.train_op = tf.train.AdamOptimizer().minimize(self.cost_op)
 
     def set_session(self, session):
         self.session = session
 
-    def fit(self, X, Y, batch_sz=20, learning_rate=10e-1, mu=0.99, activation=tf.nn.sigmoid, epochs=100, show_fig=False):
-        N, D = X.shape 
+    def forward(self, X):
+        x = tf.transpose(X, [1,0,2])
+        x = tf.reshape(x, [-1, self.chunk_size])
+        Z = tf.split(x, self.input_size)
+
+        for layer in self.layers:
+            Z = layer.forward(Z)
+
+        return Z
+
+    def fit(self, X, Y, learning_rate=10e-1, activation=tf.nn.sigmoid, epochs=1):
+        N, T, D = Xtrain.shape
         Y_flat = np.copy(Y)
         Y = y2indicator(Y)
 
-        M = self.M
         self.f = activation
 
+        batch_count = N//self.batch_size
         costs = []
-        n_batches = N // batch_sz
 
-        for i in xrange(epochs):
-            X, Y = shuffle(X, Y)
-            n_correct = 0
-            cost = 0
-            for j in xrange(n_batches):
-                Xbatch = X[j*batch_sz:(j+1)*batch_sz]
-                Ybatch = Y[j*batch_sz:(j+1)*batch_sz]
+        for i in range(epochs):
+            batch_grp = np.arange(0, self.batch_size)
 
-                _, c, p = session.run(
+            for j in range(batch_count):
+                Xbatch, Ybatch = X[batch_grp], Y[batch_grp]
+                Xbatch = Xbatch.reshape((self.batch_size, self.chunk_size, self.input_size))
+                batch_grp += self.batch_size
+
+                session.run(
                         [self.train_op, self.cost_op, self.predict_op], 
-                        feed_dict={tfX: Xbatch, tfY: Ybatch})
+                        feed_dict={self.Xin: Xbatch, self.labels: Ybatch})
 
-                cost += c
+                if j % 20 == 0:
+                    testbatch_grp = np.random.choice(
+                            N, self.batch_size, replace=True) 
 
-                if i % 10 == 0:
-                    print "i:", i, "cost:", cost, "classification rate:", (float(n_correct)/N)
+                    c, p = self.session.run(
+                            [self.cost_op, self.predict_op], feed_dict={
+                                self.Xin: X[testbatch_grp], 
+                                self.labels: Y[testbatch_grp]})
+
+                    a = accuracy(Y_flat[testbatch_grp], p)
+                    print("i:", i, "j:", j, "nb:", batch_count, "cost:", c, "accuracy:", a)
+
+
+    def score(self, X, Y):
+        """Get an accuracy of the network for a test set
+        """
+        p = self.session.run(self.predict_op, feed_dict={self.Xin: X})
+        return np.mean(Y == p)
 
 
 if __name__ == "__main__":
-    Xtrain, Xtest, Ytrain, Ytest = get_pickled_data()
+    Xtrain, Xtest, Ytrain, Ytest = get_pickled_image_data()
 
-    N, D = Xtrain.shape
+    # Remove color channel dimension
+    Xtrain = Xtrain[...,0]
+    Xtest = Xtest[...,0]
+
+    N, T, D = Xtrain.shape
     K = len(set(Ytrain))
 
     with tf.Session() as session:
-        rnn = RNN()
-        rnn.set_sesison(session)
+        # 300, 200, 100
+        rnn = RNN(D, T, 128, K)
+        rnn.set_session(session)
         session.run(tf.global_variables_initializer())
         rnn.fit(Xtrain, Ytrain)
 
+        print("Test Accuracy: ", rnn.score(Xtest[:100], Ytest[:100]))
 

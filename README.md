@@ -59,12 +59,12 @@ A Deep Convolutional GAN
 
 ## Recurrent Neural Network (RNN)
 
-A simple network with one hidden layer and a simple RNN cell
+TODO: Add in additional hidden layers
 
-MNIST accuracy: 
+### Basic RNN cell
+MNIST accuracy: **98%** 
+epochs: 100
 
-## Recurrent Neural Network (LSTM)
-
-A RNN network with Long short term memory
-
-MNIST accuracy: 
+### LSTM cell
+MNIST accuracy: **95%** 
+epochs: 10
