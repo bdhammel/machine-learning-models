@@ -58,3 +58,13 @@ A Deep Convolutional GAN
 ![](./media/dcgan.png)
 
 ## Recurrent Neural Network (RNN)
+
+A simple network with one hidden layer and a simple RNN cell
+
+MNIST accuracy: 
+
+## Recurrent Neural Network (LSTM)
+
+A RNN network with Long short term memory
+
+MNIST accuracy: 
