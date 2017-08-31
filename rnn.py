@@ -2,7 +2,6 @@ import tensorflow as tf
 import numpy as np
 
 from util import y2indicator, accuracy, get_pickled_image_data
-from ann import ANN 
 
 from tensorflow.contrib.rnn import static_rnn as get_rnn_output
 from tensorflow.contrib.rnn import BasicRNNCell, BasicLSTMCell
@@ -97,7 +96,7 @@ class RNN:
 
         return Z
 
-    def fit(self, X, Y, learning_rate=10e-1, activation=tf.nn.sigmoid, epochs=1):
+    def fit(self, X, Y, learning_rate=10e-1, activation=tf.nn.sigmoid, epochs=20):
         N, T, D = Xtrain.shape
         Y_flat = np.copy(Y)
         Y = y2indicator(Y)

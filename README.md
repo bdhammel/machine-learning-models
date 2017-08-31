@@ -62,9 +62,9 @@ A Deep Convolutional GAN
 TODO: Add in additional hidden layers
 
 ### Basic RNN cell
-MNIST accuracy: **98%** 
+MNIST accuracy: **98%**   
 epochs: 100
 
 ### LSTM cell
-MNIST accuracy: **95%** 
+MNIST accuracy: **95%**   
 epochs: 10

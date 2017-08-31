@@ -1,71 +1,66 @@
 """Convolutional Autoencoder
 """
 
-class ConPoolLayer:
-    """Combination Convolutional and Pooling layer
+class ConvolutionalAELayer:
+    """Combination Convolutional and deconvolution layer
     """
-    def __init__(self, C1, C2, layer_info):
+    def __init__(self, input_dims, layer_info):
 
+        self.input_dims = input_dims
         self.namescope = layer_info["namescope"]
-        window_shape = layer_info["window_shape"]
+        self.window_shape = layer_info["window_shape"]
+        self.window_depth = layer_info["window_depth"]
         self.window_strides = layer_info["window_strides"]
-        self.pooling_strides = layer_info["pooling_strides"]
-        self.ksize = layer_info["ksize"]
 
-        shape = window_shape + [C1, C2]
+        shape = window_shape + self.window_depth
+        print(shape)
 
         with tf.name_scope(self.namescope):
             self.W = self.weight_variable(shape)
-            self.b = self.bias_variable([shape[-1]])
+            self.bi = self.bias_variable([shape[-1]])
+            self.bo = self.bias_variable([shape[-1]])
 
-    def forward(self, Z):
+    def encode(self, Z):
         """Propagate features through Convolutional layer
         """
 
         with tf.name_scope(self.namescope):
             h_conv = tf.nn.relu(
                         tf.nn.conv2d(
-                            Z, self.W, strides=[1, 1, 1, 1], padding='SAME') 
-                        + self.b)
+                            Z, self.W, strides=self.window_strides, padding='SAME') 
+                        + self.bi)
 
-            h_pool = tf.nn.max_pool(h_conv, ksize=self.ksize, 
-                strides=self.pooling_strides, padding='SAME')
+        return h_conv
 
-        return h_pool
-
-
-class DeConPoolLayer:
-    def __init__(self, C1, C2, layer_info):
-
-        self.namescope = layer_info["namescope"]
-        self.window_strides = layer_info["window_strides"]
-        self.output_shape = C2
-
-        shape = window_shape + [C1, C2]
-
-        with tf.name_scope(self.namescope):
-            self.W = self.weight_variable(shape)
-            self.b = self.bias_variable([shape[-1]])
-
-    def forward(self, Z):
-        """Propagate features through Convolutional layer
-        """
-
+    def decode(self, Z):
         with tf.name_scope(self.namescope):
             h_deconv = tf.nn.relu(
                         tf.nn.conv2d_transpose(
-                            Z, self.W, 
-                            output_shape=self.output_shape,
-                            strides=self.window_strides, 
-                            padding='SAME') 
-                        + self.b)
+                            Z, self.W.T, strides=self.window_strides, padding='SAME') 
+                        + self.bo)
 
         return h_deconv
 
 
 class ConvolutionalAutoEncoder:
-    pass
+    def __init__(self):
+        pass
 
+    def train(self, X):
+        pass
+
+    def forward(self, Z):
+        Z = self.layer.encode(Z)
+        Z = self.layer.decode(Z)
+        return Z
+
+    def transform(self, X):
+        """
+        Args
+        ----
+        X (2D nparray)
+        """
+        pass
 
 def weight_variable(shape, stddev=.1):
     init = tf.truncated_normal(shape=shape, stddev=stddev)
@@ -76,42 +71,30 @@ def bias_variable(shape, val=.1):
     return tf.Variable(init, name="b")
 
 
-
 if __name__ == "__main__":
     Xtrain, Xtest, Ytrain, Ytest = get_pickled_image_data()
 
-    N, *D = Xtrain.shape
+    N, *D, _ = Xtrain.shape
     K = len(set(Ytrain))
 
-    conpool_layers = [
-            {
+    conpool_layer = {
                 "namescope":"CP1",
                 "window_depth":32,
                 "window_shape":[5, 5],
                 "window_strides":[1, 1, 1, 1],
-                "pooling_strides":[1, 2, 2, 1],
-                "ksize":[1, 2, 2, 1]
-            },
-            {
-                "namescope":"CP2",
-                "window_depth":64,
-                "window_shape":[5, 5],
-                "window_strides":[1, 1, 1, 1],
-                "pooling_strides":[1, 2, 2, 1],
-                "ksize":[1, 2, 2, 1]
-            }]
+            }
 
     with tf.Session() as session:
-        cnn = CNN(D, conpool_layers, [1024, 500, 100], K)
+        cae = CAE(D, conpool_layer)
         session.run(tf.global_variables_initializer())
-        cnn.set_session(session)
-        cnn.train(Xtrain)
+        cae.set_session(session)
+        cae.train(Xtrain)
 
         done = False
         while not done:
             i = np.random.choice(len(Xtest))
             x = Xtest[i]
-            y = ae.predict([x])
+            y = cae.predict([x])
             plt.subplot(1,2,1)
             plt.imshow(x.reshape(28,28), cmap='gray')
             plt.title('Original')
