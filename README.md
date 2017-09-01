@@ -4,8 +4,7 @@ Algorithms benchmarked to the MNIST dataset
 
 ## Principle Component Analysis (PCA)
 
-![VGG16](./media/pca.png)
-
+![VGG16](./media/pca.png)  
 Naive Bayes accuracy: **56%**
 
 ## Artificial Neural Network (ANN)
@@ -26,7 +25,7 @@ Notes: Slow, only ran for 2 epoch.
 
 Implementation of the VGG16 architecture with pretrained MNIST data
 
-![VGG16](./media/vgg16.png)
+![VGG16](./media/vgg16.png)  
 <small> cite: https://www.cs.toronto.edu/~frossard/post/vgg16/ </small>
 
 *Note:* Because MNIST is 28x28, first 10 layers omitted and layer depth made a factor of 3 smaller (as MNIST has only 1 color layer)
@@ -45,9 +44,11 @@ Notes: Success is largely dependent on layer sizes, seems to have a small window
 
 A symmetric convolutional autoencoder
 
+![Convolutional Auto Encoder](./media/cae.png)
+
 ## Variational Autoencoder (VAE)
 
-![VGG16](./media/vae.png)
+![Variational Auto Encoder](./media/vae.png)
 
 ## Generative Adversarial Network (DCGAN)
 
