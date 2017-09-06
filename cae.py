@@ -19,12 +19,12 @@ class ConvolutionalAELayer:
         self.window_depth = layer_info["window_depth"]
         self.window_strides = layer_info["window_strides"]
 
+        # shape needs to be: 
+        # [window size, window size, initial depth, projection depth]
         shape = [*self.window_shape, self.input_dims[-1], self.window_depth]
 
         with tf.name_scope(self.namescope):
             self.W = self.weight_variable(shape)
-            self.b = self.bias_variable([shape[-1]])
-            #self.bo = self.bias_variable([shape[-1]])
 
     def encode(self, Z):
         """Propagate features through Convolutional layer
@@ -34,7 +34,7 @@ class ConvolutionalAELayer:
             h_conv = tf.nn.relu(
                         tf.nn.conv2d(
                             Z, self.W, strides=self.window_strides, padding='SAME') 
-                        + self.b)
+                        )
 
         return h_conv
 
@@ -139,7 +139,7 @@ if __name__ == "__main__":
 
         done = False
         while not done:
-            i = np.random.choice(len(Xtest), size=(100))
+            i = np.random.choice(len(Xtest), size=(100,))
             x = Xtest[i]
             xish = cae.transform(x)
             plt.subplot(1,2,1)

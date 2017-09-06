@@ -33,10 +33,6 @@ if __name__ == "__main__":
     evecs = pca.components_.reshape(n_components, 28, 28) 
     data_train = pca.transform(Xtrain) 
 
-    # Extracting the PCA components ( eignevalues ) 
-    eigenvalues = pca.components_.reshape(n_components, 28, 28) 
-    evacs = pca.components_ 
-
     # Plot the first 8 eignenvalues
     # -- this was taken from somewhere, I can't remember 
     n_col = 6
@@ -45,7 +41,7 @@ if __name__ == "__main__":
 
     for i in range(30):
         plt.subplot(n_row, n_col, i+1)
-        plt.imshow(evecs[i].reshape(28,28), cmap='jet')
+        plt.imshow(evecs[i], cmap='jet')
 
         title_text = 'Eigenvector ' + str(i + 1)
         plt.title(title_text, size=6.5)

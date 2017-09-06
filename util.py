@@ -1,6 +1,8 @@
 import numpy as np
 from sklearn.model_selection import train_test_split
 
+MNIST_PATH = "/Users/bdhammel/Documents/programming/machine_learning/data/mnist/pickled_mnist"
+
 def accuracy(Y_flat, p):
     return np.mean(Y_flat == p)
 
@@ -20,7 +22,7 @@ def get_pickled_data():
     data is already normalized
     """
     print("Loading data")
-    d = np.load("./mnist_data/pickled_mnist")
+    d = np.load(MNIST_PATH)
     print("...done")
     targets = d[:,0]
     data = d[:,1:]
